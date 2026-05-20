@@ -1,0 +1,44 @@
+INSTRUCCIONES RÁPIDAS
+
+1. Copia la carpeta pasteleria_manager_alumno1 dentro de:
+   C:\xampp\htdocs\
+
+2. Abre XAMPP e inicia Apache y MySQL.
+
+3. Entra a:
+   http://localhost/pasteleria_manager_alumno1/public/
+
+4. La base de datos se crea sola.
+
+USUARIOS DE PRUEBA
+
+Admin:
+Correo: admin@pasteleria.local
+Usuario: admin
+Contraseña: Admin123*
+
+User:
+Correo: user@pasteleria.local
+Usuario: user
+Contraseña: User123*
+
+NUEVAS SECCIONES
+
+Admin > Usuarios:
+Crear usuarios, asignar rol Admin/User y marcar permisos por módulo.
+
+Admin > Apariencia:
+Cambiar color primario y secundario. El cambio queda permanente y el sistema ajusta el contraste automáticamente.
+
+BASE ONLINE
+
+Para que todos usen la misma base desde GitHub, configura app/config/database.local.php con la IP de la PC que tendrá MySQL encendido 24/7.
+La opción más segura es usar Tailscale.
+
+NUEVO: BASE CENTRAL Y ESTADO DE PCs
+-----------------------------------
+- Revisa docs/BASE_DE_DATOS_CENTRAL_PC_24_7.md
+- Si tus compañeros usarán tu base, cambia app/config/database.php y sube ese cambio a Git.
+- No dejes DB_HOST en 127.0.0.1 para colaboradores: eso apunta a la PC de cada quien.
+- El módulo Estado de PCs aparece para Admin y para usuarios con permiso asignado.
+- El botón Sincronizar confirma conexión del equipo actual con la base central.
