@@ -34,9 +34,6 @@ $default = [
 ];
 
 /*
-|--------------------------------------------------------------------------
-| Configuración local opcional
-|--------------------------------------------------------------------------
 | database.local.php sirve para pruebas personales.
 | No es obligatorio usarlo, porque el sistema ya prueba 3306 y 3307.
 */
