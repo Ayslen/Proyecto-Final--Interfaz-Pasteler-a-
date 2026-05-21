@@ -610,9 +610,11 @@ VALUES
     ('users', 'Usuarios y permisos', 'Crear usuarios, asignar roles y controlar permisos por módulo.', 'admin/users.php', '👥', 1, 1, 20),
     ('appearance', 'Apariencia', 'Cambiar colores permanentes del sistema.', 'admin/appearance.php', '🎨', 1, 1, 30),
     ('workstations', 'Estado de PCs', 'Ver equipos que han abierto el sistema y confirmar conexión con la base central.', 'modules/workstations.php', '💻', 1, 0, 90),
-    ('inventory', 'Inventario de materia prima', 'Consulta de harina, azúcar, huevos, leche, mantequilla y demás insumos.', 'modules/inventory.php', '📦', 1, 0, 100),
+    ('inventory', 'Inventario de materia prima', 'Consulta, registro y actualización de insumos.', 'modules/inventory.php', '📦', 1, 0, 100),
     ('products', 'Productos', 'Catálogo de pasteles, cupcakes, galletas y postres empaquetados.', 'modules/products.php', '🍰', 1, 0, 110),
     ('production', 'Registro de producción', 'Producción diaria por producto, cantidad y línea.', 'modules/production.php', '🏭', 1, 0, 120),
+    ('inventory_movements', 'Movimientos de inventario', 'Historial de entradas, salidas y ajustes de materia prima.', 'modules/inventory_movements.php', '🧾', 1, 0, 125),
+    ('product_recipes', 'Recetas de productos', 'Relación entre productos y materias primas necesarias.', 'modules/product_recipes.php', '🧪', 1, 0, 126),
     ('reports', 'Dashboards y reportes', 'Indicadores básicos y avanzados de producción.', 'modules/reports.php', '📈', 1, 0, 130),
     ('ai', 'Consultas IA', 'Preguntas inteligentes sobre producción e inventario.', 'modules/ai.php', '🤖', 1, 0, 140)
 ON DUPLICATE KEY UPDATE
