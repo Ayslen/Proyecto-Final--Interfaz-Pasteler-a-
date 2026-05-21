@@ -4,6 +4,7 @@ class Database
 {
     private static ?PDO $pdo = null;
     private static bool $migrated = false;
+    private static ?int $activePort = null;
 
     public static function config(): array
     {
@@ -17,6 +18,7 @@ class Database
         }
 
         $config = self::config();
+
         if (($config['auto_migrate'] ?? true) === true && self::$migrated === false) {
             self::migrate();
             self::$migrated = true;
@@ -28,12 +30,30 @@ class Database
     private static function connect(): void
     {
         $config = self::config();
+
         $charset = $config['charset'] ?? 'utf8mb4';
-        $host = $config['host'];
-        $port = (int) $config['port'];
-        $database = $config['database'];
-        $username = $config['username'];
-        $password = $config['password'];
+        $host = $config['host'] ?? '127.0.0.1';
+        $database = $config['database'] ?? 'pasteleria_manager';
+        $username = $config['username'] ?? 'root';
+        $password = $config['password'] ?? '';
+
+        $ports = [];
+
+        if (isset($config['port'])) {
+            $ports[] = (int) $config['port'];
+        }
+
+        if (isset($config['ports']) && is_array($config['ports'])) {
+            foreach ($config['ports'] as $port) {
+                $ports[] = (int) $port;
+            }
+        }
+
+        $ports = array_values(array_unique(array_filter($ports)));
+
+        if (empty($ports)) {
+            $ports = [3306, 3307];
+        }
 
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -41,16 +61,34 @@ class Database
             PDO::ATTR_EMULATE_PREPARES => false,
         ];
 
-        try {
-            $serverDsn = "mysql:host={$host};port={$port};charset={$charset}";
-            $serverPdo = new PDO($serverDsn, $username, $password, $options);
-            $serverPdo->exec("CREATE DATABASE IF NOT EXISTS `{$database}` CHARACTER SET {$charset} COLLATE {$charset}_unicode_ci");
+        $errors = [];
 
-            $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
-            self::$pdo = new PDO($dsn, $username, $password, $options);
-        } catch (PDOException $e) {
-            throw new RuntimeException('Error al conectar con la base de datos: ' . $e->getMessage());
+        foreach ($ports as $port) {
+            try {
+                // Primero conecta al servidor MySQL sin seleccionar base de datos.
+                $serverDsn = "mysql:host={$host};port={$port};charset={$charset}";
+                $serverPdo = new PDO($serverDsn, $username, $password, $options);
+
+                // Crea la base de datos si no existe.
+                $serverPdo->exec("CREATE DATABASE IF NOT EXISTS `{$database}` CHARACTER SET {$charset} COLLATE {$charset}_unicode_ci");
+
+                // Después conecta directamente a la base de datos.
+                $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
+                self::$pdo = new PDO($dsn, $username, $password, $options);
+                self::$activePort = $port;
+
+                return;
+            } catch (PDOException $e) {
+                $errors[] = "Puerto {$port}: " . $e->getMessage();
+            }
         }
+
+        throw new RuntimeException(
+            'Error al conectar con la base de datos. Puertos probados: ' .
+            implode(', ', $ports) .
+            '. Detalle: ' .
+            implode(' | ', $errors)
+        );
     }
 
     public static function migrate(): void
@@ -343,9 +381,28 @@ SQL);
     {
         $config = self::config();
 
+        $ports = [];
+
+        if (isset($config['port'])) {
+            $ports[] = (int) $config['port'];
+        }
+
+        if (isset($config['ports']) && is_array($config['ports'])) {
+            foreach ($config['ports'] as $port) {
+                $ports[] = (int) $port;
+            }
+        }
+
+        $ports = array_values(array_unique(array_filter($ports)));
+
+        if (empty($ports)) {
+            $ports = [3306, 3307];
+        }
+
         return [
             'host' => (string) ($config['host'] ?? ''),
-            'port' => (int) ($config['port'] ?? 3306),
+            'port' => self::$activePort ?? $ports[0],
+            'ports' => implode(', ', $ports),
             'database' => (string) ($config['database'] ?? ''),
             'username' => (string) ($config['username'] ?? ''),
             'central_note' => (string) ($config['central_note'] ?? 'Base configurada para este proyecto.'),
@@ -355,10 +412,12 @@ SQL);
     public static function logLogin(?int $userId, string $identifier, bool $success): void
     {
         $pdo = self::pdo();
+
         $stmt = $pdo->prepare(<<<SQL
 INSERT INTO login_logs (user_id, identifier, success, ip_address, user_agent)
 VALUES (:user_id, :identifier, :success, :ip_address, :user_agent)
 SQL);
+
         $stmt->execute([
             'user_id' => $userId,
             'identifier' => $identifier,
