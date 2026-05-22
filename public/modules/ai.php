@@ -1,16 +1,10 @@
 <?php
-// =========================================================================
-// 1. Cargar el entorno y verificar permisos del proyecto
-// =========================================================================
 require_once __DIR__ . '/../../app/bootstrap.php';
 
 if (class_exists('Auth')) {
     Auth::requirePermission('ai', 'view');
 }
 
-// =========================================================================
-// 2. Procesar la petición asíncrona del chat (POST)
-// =========================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ask_ai') {
     while (ob_get_level()) { ob_end_clean(); }
     header('Content-Type: application/json; charset=utf-8');
@@ -33,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (method_exists('Auth', 'role')) { $roleName = Auth::role(); }
     }
 
-    // Clasificar categorías respetando estrictamente tu ENUM de la base de datos
     $queryType = 'general';
     $lowerMsg = mb_strtolower($userMessage);
     if (strpos($lowerMsg, 'producc') !== false || strpos($lowerMsg, 'unidades') !== false || strpos($lowerMsg, 'hizo') !== false || strpos($lowerMsg, 'fabric') !== false) {
@@ -44,20 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $queryType = 'recomendacion';
     }
 
-    // 🔑 Tu API Key Activa de Groq
-    $apiKey = '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'; 
+    $apiKey = $_ENV['GROQ_API_KEY'] ?? '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'; 
     $apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
     $modelName = 'llama-3.3-70b-versatile'; 
 
     $aiReply = null;
     $errorMessage = null;
-    $success = 1; // TINYINT(1) -> 1 significa True/Éxito por defecto
+    $success = 1;
     $dbContextData = "No se requirieron datos en tiempo real de la base de datos.";
     $generatedSql = 'GENERAL';
     
     $conexionActiva = null; 
 
-    // Conexión a MySQL
     try {
         $dbHost = '127.0.0.1';
         $dbName = 'pasteleria_manager';
@@ -91,7 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     if ($conexionActiva !== null) {
         try {
-            // FASE 1: Obtener comando SQL real sin campos inventados
             $sqlPrompt = "Eres un traductor estricto de lenguaje natural a consultas SQL para MySQL.\n"
                        . "Genera EXCLUSIVAMENTE una consulta SELECT válida utilizando únicamente este esquema real de tablas:\n"
                        . "- materias_primas (id, nombre, unidad, stock_actual, stock_minimo)\n"
@@ -101,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                        . "1. Si preguntan por insumos o empaques, haz un SELECT únicamente a la tabla materias_primas.\n"
                        . "2. ¡PROHIBIDO!: No uses ni inventes columnas llamadas 'stock_maximo' o 'categoria' dentro de materias_primas. Busca los elementos usando la columna 'nombre' con un LIKE. Ejemplo: WHERE nombre LIKE '%Empaque%'.\n"
                        . "3. En el SELECT de materias_primas selecciona estrictamente: id, nombre, unidad, stock_actual, stock_minimo.\n"
-                       . "4. Devuelve únicamente la consulta SQL limpia en texto plano, sin markdown (sin ```sql) y sin punto y coma (;).\n"
+                       . "4. Devuelve únicamente la consulta SQL limpia en texto plano, sin markdown (sin ```sql) and sin punto y coma (;).\n"
                        . "5. Si es un saludo o no requiere base de datos, responde únicamente: GENERAL";
 
             $chSql = curl_init();
@@ -140,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $generatedSql = trim($generatedSql);
             curl_close($chSql);
 
-            // Ejecutar la consulta SQL en tu MySQL de forma segura
             if ($generatedSql !== 'GENERAL' && stripos($generatedSql, 'SELECT') === 0) {
                 $stmtData = $conexionActiva->query($generatedSql);
                 $rows = $stmtData->fetchAll();
@@ -151,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
             }
 
-            // FASE 2: Formatear la respuesta basada en el JSON real de la BD
             $finalPrompt = "Eres un asistente experto para el sistema industrial pasteleria_manager.\n"
                          . "Responde la pregunta del usuario utilizando única y exclusivamente los siguientes datos reales devueltos por MySQL:\n"
                          . "Datos obtenidos de MySQL: " . $dbContextData . "\n\n"
@@ -206,9 +194,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $aiReply = "Error interno del sistema. Detalle técnico: " . ($errorMessage ?? "No se recibió respuesta procesable de la base de datos.");
     }
 
-    // =========================================================================
-    // GUARDADO EN LA TABLA HISTÓRICA (Mapeado idéntico a tu CREATE TABLE)
-    // =========================================================================
     if ($conexionActiva !== null) {
         try {
             $sqlLog = "INSERT INTO ai_queries (user_id, role_name, question, context_summary, response, query_type, success, error_message) 
@@ -220,9 +205,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':question'        => $userMessage,
                 ':context_summary' => mb_strimwidth("SQL: " . $generatedSql . " | Contexto: " . $dbContextData, 0, 500, "..."), 
                 ':response'        => $aiReply,
-                ':query_type'      => $queryType, // Mapea directo con tu ENUM
-                ':success'         => $success,   // Pasa 1 (éxito) o 0 (fallo) al TINYINT(1)
-                ':error_message'   => $errorMessage ? mb_strimwidth($errorMessage, 0, 255, "...") : null // Límite exacto de tu VARCHAR(255)
+                ':query_type'      => $queryType, 
+                ':success'         => $success,   
+                ':error_message'   => $errorMessage ? mb_strimwidth($errorMessage, 0, 255, "...") : null 
             ]);
         } catch (PDOException $e) {}
     }
