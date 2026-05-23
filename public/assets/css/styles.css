@@ -50,9 +50,10 @@ a:hover {
 }
 
 .navbar {
-    background: rgba(255,255,255,0.90);
+    background: rgba(255,255,255,0.85); /* Un poco más transparente para el efecto cristal */
     border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -95,6 +96,7 @@ a:hover {
     gap: 10px;
 }
 
+/* --- BOTONES CON ANIMACIÓN --- */
 .nav-links a,
 .btn {
     border: 0;
@@ -110,6 +112,16 @@ a:hover {
     font-weight: 700;
     font-size: 14px;
     line-height: 1.2;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.nav-links a:hover,
+.btn:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px var(--shadow-color);
+    filter: brightness(1.1);
 }
 
 .nav-links a.secondary,
@@ -135,12 +147,22 @@ a:hover {
     align-items: center;
 }
 
+/* --- TARJETAS ESTILO CRISTAL (Glassmorphism) --- */
 .card {
-    background: rgba(255,255,255,0.95);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 24px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 10px 30px rgba(139, 69, 19, 0.08);
     padding: 28px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(139, 69, 19, 0.15);
+    border-color: var(--primary-soft);
 }
 
 .card.small {
@@ -148,8 +170,9 @@ a:hover {
 }
 
 .card.highlight {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: var(--primary-text);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    border-left: 5px solid var(--primary);
+    color: var(--text);
 }
 
 .card.highlight h1,
@@ -157,7 +180,7 @@ a:hover {
 .card.highlight h3,
 .card.highlight p,
 .card.highlight .muted {
-    color: var(--primary-text);
+    color: var(--text); /* Ajustado para que el texto se lea bien con el fondo claro */
 }
 
 h1, h2, h3 {
@@ -213,11 +236,18 @@ p, li {
 }
 
 .stat {
-    background: white;
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 20px;
     padding: 20px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.stat:hover {
+    transform: translateY(-3px);
 }
 
 .stat strong {
@@ -259,7 +289,8 @@ input, select, textarea {
     padding: 12px 14px;
     font-size: 15px;
     outline: none;
-    background: white;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
 }
 
 input[type="checkbox"] {
@@ -277,7 +308,8 @@ input[type="color"] {
 
 input:focus, select:focus, textarea:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--focus-shadow);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+    background: #ffffff;
 }
 
 input:disabled, select:disabled {
@@ -321,7 +353,8 @@ input:disabled, select:disabled {
     overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: 18px;
-    background: white;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
 }
 
 table {
@@ -338,11 +371,19 @@ th, td {
 
 th {
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-text);
 }
 
 tr:last-child td {
     border-bottom: 0;
+}
+
+/* Transición suave para las filas de la tabla */
+tr {
+    transition: background-color 0.2s ease;
+}
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .footer {
