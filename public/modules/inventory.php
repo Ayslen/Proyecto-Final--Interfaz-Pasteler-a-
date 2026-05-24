@@ -9,7 +9,7 @@ $canManageInventory = Auth::can('inventory', 'create') || Auth::can('inventory',
 $editingItem = null;
 
 if (isset($_GET['edit_id']) && $canManageInventory) {
-    $stmt = $pdo->prepare('SELECT * FROM materias_primas WHERE id = :id LIMIT 1');
+    $stmt = $pdo->prepare("SELECT * FROM materias_primas WHERE id = :id LIMIT 1");
     $stmt->execute(['id' => (int) $_GET['edit_id']]);
     $editingItem = $stmt->fetch() ?: null;
 }
@@ -20,12 +20,7 @@ function registrarMovimientoInventario(PDO $pdo, int $materiaId, string $tipo, f
         return;
     }
 
-    $stmt = $pdo->prepare(<<<SQL
-INSERT INTO movimientos_inventario
-    (materia_prima_id, tipo, cantidad, descripcion, created_by)
-VALUES
-    (:materia_prima_id, :tipo, :cantidad, :descripcion, :created_by)
-SQL);
+    $stmt = $pdo->prepare("INSERT INTO movimientos_inventario (materia_prima_id, tipo, cantidad, descripcion, created_by) VALUES (:materia_prima_id, :tipo, :cantidad, :descripcion, :created_by)");
 
     $stmt->execute([
         'materia_prima_id' => $materiaId,
@@ -70,7 +65,7 @@ if (is_post() && ($_POST['form_type'] ?? '') === 'materia_prima') {
         $materiaId = $id;
 
         if ($id > 0) {
-            $stmt = $pdo->prepare('SELECT id, stock_actual FROM materias_primas WHERE id = :id LIMIT 1');
+            $stmt = $pdo->prepare("SELECT id, stock_actual FROM materias_primas WHERE id = :id LIMIT 1");
             $stmt->execute(['id' => $id]);
             $oldItem = $stmt->fetch();
 
@@ -80,14 +75,7 @@ if (is_post() && ($_POST['form_type'] ?? '') === 'materia_prima') {
 
             $oldStock = (float) $oldItem['stock_actual'];
 
-            $stmt = $pdo->prepare(<<<SQL
-UPDATE materias_primas
-SET nombre = :nombre,
-    unidad = :unidad,
-    stock_actual = :stock_actual,
-    stock_minimo = :stock_minimo
-WHERE id = :id
-SQL);
+            $stmt = $pdo->prepare("UPDATE materias_primas SET nombre = :nombre, unidad = :unidad, stock_actual = :stock_actual, stock_minimo = :stock_minimo WHERE id = :id");
 
             $stmt->execute([
                 'nombre' => $nombre,
@@ -111,18 +99,11 @@ SQL);
 
             Flash::set('success', 'Materia prima actualizada correctamente.');
         } else {
-            $stmt = $pdo->prepare('SELECT id, stock_actual FROM materias_primas WHERE nombre = :nombre LIMIT 1');
+            $stmt = $pdo->prepare("SELECT id, stock_actual FROM materias_primas WHERE nombre = :nombre LIMIT 1");
             $stmt->execute(['nombre' => $nombre]);
             $oldItem = $stmt->fetch();
 
-            $stmt = $pdo->prepare(<<<SQL
-INSERT INTO materias_primas (nombre, unidad, stock_actual, stock_minimo)
-VALUES (:nombre, :unidad, :stock_actual, :stock_minimo)
-ON DUPLICATE KEY UPDATE
-    unidad = VALUES(unidad),
-    stock_actual = VALUES(stock_actual),
-    stock_minimo = VALUES(stock_minimo)
-SQL);
+            $stmt = $pdo->prepare("INSERT INTO materias_primas (nombre, unidad, stock_actual, stock_minimo) VALUES (:nombre, :unidad, :stock_actual, :stock_minimo) ON DUPLICATE KEY UPDATE unidad = VALUES(unidad), stock_actual = VALUES(stock_actual), stock_minimo = VALUES(stock_minimo)");
 
             $stmt->execute([
                 'nombre' => $nombre,
@@ -131,7 +112,7 @@ SQL);
                 'stock_minimo' => $stockMinimo,
             ]);
 
-            $stmt = $pdo->prepare('SELECT id, stock_actual FROM materias_primas WHERE nombre = :nombre LIMIT 1');
+            $stmt = $pdo->prepare("SELECT id, stock_actual FROM materias_primas WHERE nombre = :nombre LIMIT 1");
             $stmt->execute(['nombre' => $nombre]);
             $savedItem = $stmt->fetch();
 
@@ -180,18 +161,11 @@ SQL);
     redirect('modules/inventory.php');
 }
 
-$items = $pdo->query('SELECT * FROM materias_primas ORDER BY nombre ASC')->fetchAll();
+$items = $pdo->query("SELECT * FROM materias_primas ORDER BY nombre ASC")->fetchAll();
 
 $movements = [];
 try {
-    $movements = $pdo->query(<<<SQL
-SELECT mi.tipo, mi.cantidad, mi.descripcion, mi.created_at, mp.nombre AS materia_prima, u.name AS usuario
-FROM movimientos_inventario mi
-INNER JOIN materias_primas mp ON mp.id = mi.materia_prima_id
-LEFT JOIN users u ON u.id = mi.created_by
-ORDER BY mi.created_at DESC, mi.id DESC
-LIMIT 10
-SQL)->fetchAll();
+    $movements = $pdo->query("SELECT mi.tipo, mi.cantidad, mi.descripcion, mi.created_at, mp.nombre AS materia_prima, u.name AS usuario FROM movimientos_inventario mi INNER JOIN materias_primas mp ON mp.id = mi.materia_prima_id LEFT JOIN users u ON u.id = mi.created_by ORDER BY mi.created_at DESC, mi.id DESC LIMIT 10")->fetchAll();
 } catch (Throwable $e) {
     $movements = [];
 }
@@ -199,106 +173,94 @@ SQL)->fetchAll();
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
-<section class="hero">
-    <div class="card">
+<section class="hero" style="padding-bottom: 0;">
+    <div class="card" style="margin-bottom: 24px;">
         <span class="badge">Módulo</span>
         <h1 style="font-size: 34px; margin-top: 14px;">Inventario de materia prima</h1>
         <p class="muted">
             Consulta, registro y actualización de insumos de la pastelería industrial.
         </p>
 
-        <div class="permission-summary">
+        <div class="permission-summary" style="margin-top: 15px;">
             <span class="permission-pill">Ver: sí</span>
             <span class="permission-pill">Registrar: <?= Auth::can('inventory', 'create') ? 'sí' : 'no' ?></span>
             <span class="permission-pill">Editar: <?= Auth::can('inventory', 'edit') ? 'sí' : 'no' ?></span>
             <span class="permission-pill">Eliminar: <?= Auth::can('inventory', 'delete') ? 'sí' : 'no' ?></span>
             <span class="permission-pill">Administrar: <?= Auth::can('inventory', 'manage') ? 'sí' : 'no' ?></span>
         </div>
+    </div>
 
-        <?php if ($canManageInventory): ?>
-            <div class="card small" style="margin-top: 22px;">
-                <h3><?= $editingItem ? 'Actualizar materia prima' : 'Registrar materia prima' ?></h3>
+    <?php if ($canManageInventory): ?>
+        <div class="card highlight" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 20px;">
+                <?= $editingItem ? '✏️ Actualizar materia prima' : '➕ Ingresar nuevo ingrediente' ?>
+            </h3>
 
-                <form method="post">
-                    <?= Csrf::field() ?>
-                    <input type="hidden" name="form_type" value="materia_prima">
-                    <input type="hidden" name="id" value="<?= h((string) ($editingItem['id'] ?? '')) ?>">
+            <form method="post">
+                <?= Csrf::field() ?>
+                <input type="hidden" name="form_type" value="materia_prima">
+                <input type="hidden" name="id" value="<?= h((string) ($editingItem['id'] ?? '')) ?>">
 
-                    <div class="grid two">
-                        <div class="form-group">
-                            <label for="nombre">Materia prima</label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                name="nombre"
-                                required
-                                value="<?= h($editingItem['nombre'] ?? '') ?>"
-                                placeholder="Ej. Harina, azúcar, fresas"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="unidad">Unidad</label>
-                            <select id="unidad" name="unidad" required>
-                                <?php
-                                $unidadActual = $editingItem['unidad'] ?? '';
-                                $unidades = ['kg', 'litros', 'piezas', 'gramos', 'ml'];
-                                foreach ($unidades as $unidad):
-                                ?>
-                                    <option value="<?= h($unidad) ?>" <?= $unidadActual === $unidad ? 'selected' : '' ?>>
-                                        <?= h($unidad) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="stock_actual">Stock actual</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                id="stock_actual"
-                                name="stock_actual"
-                                required
-                                value="<?= h((string) ($editingItem['stock_actual'] ?? '')) ?>"
-                                placeholder="Ej. 250"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="stock_minimo">Stock mínimo</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                id="stock_minimo"
-                                name="stock_minimo"
-                                required
-                                value="<?= h((string) ($editingItem['stock_minimo'] ?? '')) ?>"
-                                placeholder="Ej. 50"
-                            >
-                        </div>
+                <div class="grid four">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="nombre">Nombre del ingrediente</label>
+                        <input type="text" id="nombre" name="nombre" required
+                            value="<?= h($editingItem['nombre'] ?? '') ?>"
+                            placeholder="Ej. Harina, azúcar, fresas">
                     </div>
 
-                    <div class="actions">
-                        <button type="submit" class="btn">
-                            <?= $editingItem ? 'Actualizar materia prima' : 'Registrar materia prima' ?>
-                        </button>
+                    <div class="form-group">
+                        <label for="unidad">Unidad de medida</label>
+                        <select id="unidad" name="unidad" required>
+                            <?php
+                            $unidadActual = $editingItem['unidad'] ?? '';
+                            $unidades = ['kg', 'litros', 'piezas', 'gramos', 'ml'];
+                            foreach ($unidades as $unidad):
+                            ?>
+                                <option value="<?= h($unidad) ?>" <?= $unidadActual === $unidad ? 'selected' : '' ?>>
+                                    <?= h($unidad) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="stock_actual">Stock actual</label>
+                        <input type="number" step="0.01" min="0" id="stock_actual" name="stock_actual" required
+                            value="<?= h((string) ($editingItem['stock_actual'] ?? '')) ?>"
+                            placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="grid two" style="align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="stock_minimo">Alerta de Stock Mínimo (Límite)</label>
+                        <input type="number" step="0.01" min="0" id="stock_minimo" name="stock_minimo" required
+                            value="<?= h((string) ($editingItem['stock_minimo'] ?? '')) ?>"
+                            placeholder="Cantidad mínima permitida">
+                    </div>
+
+                    <div class="actions" style="justify-content: flex-end;">
                         <?php if ($editingItem): ?>
                             <a class="btn secondary" href="<?= h(url('modules/inventory.php')) ?>">Cancelar edición</a>
                         <?php endif; ?>
+                        
+                        <button type="submit" class="btn">
+                            <?= $editingItem ? 'ACTUALIZAR INVENTARIO' : 'GUARDAR INGREDIENTE' ?>
+                        </button>
                     </div>
-                </form>
-            </div>
-        <?php else: ?>
-            <div class="alert warning">
-                Tu usuario solo puede consultar inventario. Para registrar o editar materia prima se requiere permiso de Admin o permisos de edición.
-            </div>
-        <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    <?php else: ?>
+        <div class="alert warning">
+            Tu usuario solo puede consultar inventario. Para registrar o editar materia prima se requiere permiso de Admin o permisos de edición.
+        </div>
+    <?php endif; ?>
 
-        <div class="table-wrap" style="margin-top: 24px;">
+    <div class="card" style="margin-bottom: 24px;">
+        <h3>📦 Existencias Actuales</h3>
+        <div class="table-wrap" style="margin-top: 15px;">
             <table>
                 <thead>
                     <tr>
@@ -316,18 +278,18 @@ require_once __DIR__ . '/../partials/header.php';
                     <?php foreach ($items as $item): ?>
                         <?php $bajoStock = (float) $item['stock_actual'] <= (float) $item['stock_minimo']; ?>
                         <tr>
-                            <td><?= h($item['nombre']) ?></td>
+                            <td style="font-weight: bold; color: var(--primary-dark);"><?= h($item['nombre']) ?></td>
                             <td><?= h($item['unidad']) ?></td>
                             <td><?= h(number_format((float) $item['stock_actual'], 2)) ?></td>
                             <td><?= h(number_format((float) $item['stock_minimo'], 2)) ?></td>
                             <td>
                                 <span class="status-pill <?= $bajoStock ? 'error' : 'online' ?>">
-                                    <?= $bajoStock ? 'Bajo stock' : 'Disponible' ?>
+                                    <?= $bajoStock ? '⚠️ Bajo stock' : '✅ Disponible' ?>
                                 </span>
                             </td>
                             <?php if ($canManageInventory): ?>
                                 <td>
-                                    <a href="<?= h(url('modules/inventory.php?edit_id=' . $item['id'])) ?>">Editar</a>
+                                    <a class="btn secondary" style="padding: 5px 10px; font-size: 12px;" href="<?= h(url('modules/inventory.php?edit_id=' . $item['id'])) ?>">Editar</a>
                                 </td>
                             <?php endif; ?>
                         </tr>
@@ -335,7 +297,10 @@ require_once __DIR__ . '/../partials/header.php';
 
                     <?php if (!$items): ?>
                         <tr>
-                            <td colspan="<?= $canManageInventory ? '6' : '5' ?>">Aún no hay materia prima registrada.</td>
+                            <td colspan="<?= $canManageInventory ? '6' : '5' ?>" style="text-align: center; padding: 30px;">
+                                <span style="font-size: 24px; display: block; margin-bottom: 10px;">🫙</span>
+                                Aún no hay materia prima registrada en la pastelería.
+                            </td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -344,27 +309,29 @@ require_once __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
-<section class="grid two">
+<section class="grid two" style="padding-bottom: 40px;">
     <div class="card small">
-        <h3>Movimientos recientes</h3>
+        <h3>Últimos movimientos</h3>
         <?php if ($movements): ?>
-            <div class="table-wrap">
-                <table>
+            <div class="table-wrap" style="margin-top: 10px;">
+                <table style="font-size: 13px;">
                     <thead>
                         <tr>
                             <th>Materia</th>
                             <th>Tipo</th>
-                            <th>Cantidad</th>
-                            <th>Descripción</th>
+                            <th>Cant.</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($movements as $movement): ?>
                             <tr>
                                 <td><?= h($movement['materia_prima']) ?></td>
-                                <td><?= h($movement['tipo']) ?></td>
+                                <td>
+                                    <span style="color: <?= $movement['tipo'] === 'entrada' ? 'var(--success)' : 'var(--danger)' ?>; font-weight: bold;">
+                                        <?= h(ucfirst($movement['tipo'])) ?>
+                                    </span>
+                                </td>
                                 <td><?= h(number_format((float) $movement['cantidad'], 2)) ?></td>
-                                <td><?= h($movement['descripcion'] ?? '') ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -375,13 +342,27 @@ require_once __DIR__ . '/../partials/header.php';
         <?php endif; ?>
     </div>
 
-    <div class="card small">
+    <div class="card small" style="display: flex; flex-direction: column; justify-content: center;">
         <h3>Uso del módulo</h3>
-        <p>
-            Este módulo permite registrar materia prima, actualizar existencias y detectar insumos con bajo stock.
-            Los cambios de stock se guardan también como movimientos de inventario.
+        <p class="muted">
+            Este módulo permite registrar materia prima, actualizar existencias y detectar insumos con bajo stock. 
+            Las entradas y salidas se registran automáticamente en el historial para control de calidad.
         </p>
     </div>
 </section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            let alertas = document.querySelectorAll('.alert');
+            alertas.forEach(function(alerta) {
+                alerta.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+                alerta.style.opacity = "0";
+                alerta.style.transform = "translateY(-10px)";
+                setTimeout(() => alerta.remove(), 500); // Lo borra del HTML al terminar
+            });
+        }, 3500);
+    });
+</script>
 
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>
