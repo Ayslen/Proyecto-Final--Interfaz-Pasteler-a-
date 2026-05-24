@@ -50,35 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $conexionActiva = null; 
 
     try {
-        $dbHost = '127.0.0.1';
-        $dbName = 'pasteleria_manager';
-        $dbUser = 'root';
-        $dbPass = '';
-        $dbPort = '3306';
-        $dbCharset = 'utf8mb4';
-
-        $dbConfigFile = __DIR__ . '/../../app/config/database.php';
-        if (file_exists($dbConfigFile)) {
-            $loadedConfig = require $dbConfigFile;
-            if (is_array($loadedConfig)) {
-                $dbHost = $loadedConfig['host'] ?? $dbHost;
-                $dbName = $loadedConfig['database'] ?? $dbName;
-                $dbUser = $loadedConfig['username'] ?? $dbUser;
-                $dbPass = $loadedConfig['password'] ?? $dbPass;
-                $dbPort = $loadedConfig['port'] ?? $dbPort;
-                $dbCharset = $loadedConfig['charset'] ?? $dbCharset;
-            }
-        }
-
-        $dsn = "mysql:host=$dbHost;dbname=$dbName;port=$dbPort;charset=$dbCharset";
-        $conexionActiva = new PDO($dsn, $dbUser, $dbPass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
-    } catch (Exception $e) {
+        $conexionActiva = Database::pdo();
+    } catch (Throwable $e) {
         $errorMessage = "Error de conexión local: " . $e->getMessage();
         $success = 0;
-    }
+    }    
 
     if ($conexionActiva !== null) {
         try {
