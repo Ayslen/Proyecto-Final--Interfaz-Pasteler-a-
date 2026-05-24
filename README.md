@@ -1,300 +1,545 @@
 # Manager Inteligente para Administración de Producción
-## Pastelería industrial — Alumno 1: Backend, Login, Roles, Permisos y Apariencia
 
-Este proyecto contiene la parte del **Alumno 1** del proyecto final:
+## Pastelería Industrial
 
-- Estructura inicial del sistema.
-- Conexión general a base de datos MySQL.
-- Login de usuarios.
-- Registro público como **User**.
-- Creación de usuarios desde el panel **Admin**.
-- Roles de usuario: **Admin** y **User**.
-- Protección de páginas por rol.
-- Protección de módulos por permisos.
-- Matriz de permisos con casillas: Ver, Registrar, Editar, Eliminar y Administrar.
-- Cierre de sesión.
-- Redirección automática según tipo de cuenta.
-- Validación para evitar usuarios repetidos.
-- Contraseñas guardadas con `password_hash()`.
-- Sección **solo Admin** para cambiar color primario y secundario de forma permanente.
-- Contraste automático de texto según el color elegido.
+Aplicación web desarrollada en **PHP + MySQL** para administrar información de una empresa de manufactura enfocada en una **pastelería industrial**.
 
-La empresa simulada es una **pastelería industrial** dedicada a la producción diaria de pasteles, cupcakes, galletas y postres empaquetados.
+El sistema permite gestionar usuarios, roles, permisos, inventario de materia prima, productos, producción diaria, movimientos de inventario, recetas de productos, dashboards y consultas mediante Inteligencia Artificial.
 
 ---
 
-## Requisitos
+## Descripción del proyecto
 
-- XAMPP, WAMP, Laragon o servidor con PHP 8+.
-- MySQL/MariaDB.
-- Navegador web.
-- Git, si trabajarán en equipo.
+Este proyecto simula el funcionamiento de un sistema inteligente de apoyo a la toma de decisiones dentro de una empresa de producción.
 
-No requiere Composer ni librerías externas.
+La empresa elegida es una **pastelería industrial**, dedicada a la elaboración de:
+
+- Pasteles.
+- Cupcakes.
+- Galletas.
+- Postres empaquetados.
+- Brownies.
+- Cheesecakes.
+
+La aplicación permite administrar información relacionada con producción, inventario y análisis mediante IA.
 
 ---
 
-## Instalación rápida en XAMPP
+## Empresa simulada
 
-1. Copia la carpeta del proyecto dentro de:
+```text
+Empresa: Pastelería industrial
 
-```txt
-C:\xampp\htdocs\pasteleria_manager_alumno1
+Producto principal: Pasteles personalizados y postres empaquetados
+
+Materia prima: Harina, azúcar, huevos, leche, mantequilla, crema, chocolate, frutas, queso crema, vainilla, empaques, cajas y capacillos
+
+Producción: Preparación, horneado, decoración y empaquetado diario de pasteles, cupcakes, galletas y postres
 ```
 
-2. Inicia **Apache** y **MySQL** en XAMPP.
+---
 
-3. Abre en el navegador:
+## Funcionamiento general del sistema
 
-```txt
-http://localhost/pasteleria_manager_alumno1/public/
+El sistema funciona mediante un login con roles de usuario.
+
+Existen dos tipos principales de usuario:
+
+### Admin
+
+El administrador tiene acceso completo al sistema.
+
+Puede:
+
+- Consultar dashboard general.
+- Administrar usuarios.
+- Administrar permisos.
+- Ver estado de PCs conectadas.
+- Administrar inventario.
+- Registrar productos.
+- Registrar producción diaria.
+- Consultar movimientos de inventario.
+- Administrar recetas de productos.
+- Consultar reportes.
+- Usar consultas con IA.
+- Modificar apariencia del sistema.
+
+### User
+
+El usuario tiene acceso limitado.
+
+Puede:
+
+- Consultar información general.
+- Ver módulos permitidos.
+- Registrar producción si tiene permiso.
+- Consultar datos de inventario, productos o reportes según permisos asignados.
+- Realizar consultas básicas a la IA.
+
+---
+
+## Módulos principales
+
+### Dashboard
+
+Muestra información general del sistema y accesos rápidos a los módulos disponibles.
+
+### Estado de PCs
+
+Permite revisar equipos que han abierto el sistema, su conexión y estado de sincronización.
+
+### Inventario de materia prima
+
+Permite consultar, registrar y actualizar materia prima de la pastelería.
+
+Ejemplos:
+
+- Harina.
+- Azúcar.
+- Huevos.
+- Leche.
+- Chocolate.
+- Fresas.
+- Empaques.
+
+También muestra si una materia prima está disponible o en bajo stock.
+
+### Productos
+
+Permite registrar y consultar productos fabricados por la pastelería.
+
+Ejemplos:
+
+- Pastel de chocolate empaquetado.
+- Pastel de tres leches.
+- Cupcake de vainilla.
+- Galleta con chispas de chocolate.
+- Cheesecake de fresa.
+- Brownie empaquetado.
+
+### Registro de producción
+
+Permite registrar producción diaria indicando:
+
+- Fecha.
+- Producto fabricado.
+- Cantidad producida.
+- Línea de producción.
+
+Al registrar producción, el sistema puede descontar automáticamente materia prima si el producto tiene una receta configurada.
+
+### Movimientos de inventario
+
+Muestra el historial de entradas, salidas y ajustes de materia prima.
+
+Permite registrar movimientos como:
+
+- Compra de materia prima.
+- Salida por producción.
+- Ajuste manual de stock.
+
+### Recetas de productos
+
+Permite relacionar productos con las materias primas necesarias para fabricarlos.
+
+Ejemplo:
+
+```text
+Pastel de chocolate empaquetado:
+- Harina: 0.50 kg
+- Azúcar: 0.30 kg
+- Huevos: 4 piezas
+- Chocolate: 0.25 kg
 ```
 
-4. La base de datos y las tablas se crean automáticamente la primera vez que se abre el sistema.
+Esta relación permite calcular consumo de materia prima al registrar producción.
+
+### Dashboards y reportes
+
+Muestra indicadores de producción, inventario y desempeño del sistema.
+
+### Consultas IA
+
+Permite hacer preguntas relacionadas con la producción, inventario y productos de la pastelería.
+
+Ejemplos:
+
+```text
+¿Qué materias primas tenemos en inventario?
+¿Cuál es el producto más fabricado?
+¿Qué materiales podrían agotarse pronto?
+¿Qué recomendaciones hay para mejorar la producción?
+```
+
+Las consultas realizadas a la IA se almacenan en la tabla `ai_queries`.
+
+---
+
+## Base de datos
+
+La base de datos utilizada es:
+
+```text
+pasteleria_manager
+```
+
+El sistema crea automáticamente la base de datos y sus tablas al abrir la aplicación, siempre que `auto_migrate` esté activado.
+
+También se incluye el archivo:
+
+```text
+database/schema.sql
+```
+
+como respaldo y documentación formal de la estructura de la base de datos.
+
+---
+
+## Conexión con XAMPP
+
+El sistema está preparado para funcionar con MySQL en los puertos:
+
+```text
+3306
+3307
+```
+
+Esto permite que el proyecto funcione en diferentes configuraciones de XAMPP sin que cada integrante tenga que modificar manualmente el puerto.
+
+La configuración se encuentra en:
+
+```text
+app/config/database.php
+app/core/Database.php
+```
+
+---
+
+## Tablas principales
+
+### roles
+
+Guarda los roles del sistema.
+
+```text
+admin
+user
+```
+
+### users
+
+Guarda los usuarios registrados, sus datos, rol y contraseña protegida.
+
+### login_logs
+
+Guarda historial de intentos de inicio de sesión.
+
+### materias_primas
+
+Guarda el inventario de materia prima.
+
+### productos
+
+Guarda los productos fabricados por la pastelería.
+
+### producto_materias_primas
+
+Relaciona productos con materias primas.  
+Funciona como receta técnica del producto.
+
+### produccion_diaria
+
+Guarda los registros de producción diaria.
+
+### movimientos_inventario
+
+Guarda entradas, salidas y ajustes de inventario.
+
+### modules
+
+Guarda los módulos disponibles del sistema.
+
+### user_module_permissions
+
+Guarda permisos específicos por usuario y módulo.
+
+### workstation_status
+
+Guarda información de los equipos que han abierto el sistema.
+
+### ai_queries
+
+Guarda el historial de consultas realizadas a la IA.
 
 ---
 
 ## Usuarios de prueba
 
-### Administrador
+El sistema crea usuarios iniciales para realizar pruebas.
 
-```txt
-Correo: admin@pasteleria.local
-Usuario: admin
-Contraseña: Admin123*
-Rol: Admin
+```text
+Usuario Admin:
+admin
+
+Contraseña:
+Admin123*
 ```
 
-### Usuario normal
+```text
+Usuario User:
+user
 
-```txt
-Correo: user@pasteleria.local
-Usuario: user
-Contraseña: User123*
-Rol: User
+Contraseña:
+User123*
 ```
 
 ---
 
-## Módulos y permisos
+## Uso local con XAMPP
 
-El administrador puede entrar a:
+1. Copiar o clonar el proyecto dentro de:
 
-```txt
-/public/admin/users.php
+```text
+C:\xampp\htdocs
 ```
 
-Desde ahí puede:
+2. Iniciar en XAMPP:
 
-- Crear usuarios.
-- Editar usuarios existentes.
-- Cambiar rol Admin/User.
-- Activar o desactivar cuentas.
-- Asignar permisos por módulo usando casillas.
+```text
+Apache
+MySQL
+```
 
-Acciones disponibles por módulo:
+3. Abrir el proyecto en el navegador:
 
-- Ver.
-- Registrar.
-- Editar.
-- Eliminar.
-- Administrar.
+```text
+http://localhost/Proyecto-Final--Interfaz-Pasteler-a-/public/
+```
 
-Los módulos administrativos como **Usuarios y permisos** y **Apariencia** son solo para Admin. Aunque aparezcan en la matriz, el sistema no permite asignarlos a usuarios normales.
+4. Iniciar sesión con el usuario de prueba.
 
 ---
 
-## Apariencia del sistema
+## Estructura general del proyecto
 
-La sección de apariencia está en:
-
-```txt
-/public/admin/appearance.php
+```text
+Proyecto-Final--Interfaz-Pasteler-a-/
+│
+├── app/
+│   ├── config/
+│   │   └── database.php
+│   │
+│   ├── core/
+│   │   └── Database.php
+│   │
+│   └── ...
+│
+├── database/
+│   └── schema.sql
+│
+├── public/
+│   ├── admin/
+│   ├── modules/
+│   │   ├── ai.php
+│   │   ├── inventory.php
+│   │   ├── inventory_movements.php
+│   │   ├── product_recipes.php
+│   │   ├── products.php
+│   │   ├── production.php
+│   │   ├── reports.php
+│   │   └── workstations.php
+│   │
+│   └── index.php
+│
+├── README.md
+└── index.php
 ```
-
-Solo puede entrar un Admin. Permite cambiar:
-
-- Color primario.
-- Color secundario.
-
-Los colores se guardan en la tabla `app_settings`, así que el cambio queda permanente. El sistema calcula automáticamente si el texto debe ser blanco u oscuro para que tenga contraste con el color de fondo.
 
 ---
 
-## Configuración de base de datos
+## Aportaciones por alumno
 
-El archivo principal de configuración está en:
+## Alumno 1: Backend, login, roles, permisos y estructura base
 
-```txt
+El Alumno 1 desarrolló la base principal del sistema.
+
+Aportaciones:
+
+- Creación de la estructura inicial del proyecto.
+- Configuración general de la aplicación.
+- Creación del login.
+- Manejo de sesiones.
+- Creación de roles de usuario.
+- Protección de rutas según permisos.
+- Administración de usuarios.
+- Administración de permisos por módulo.
+- Configuración inicial de módulos.
+- Diseño base de navegación.
+- Configuración inicial de apariencia.
+- Creación de usuarios de prueba.
+- Creación de la estructura inicial para dashboards y módulos.
+
+Archivos relacionados:
+
+```text
+app/
+public/admin/
+public/index.php
+public/modules/
+app/core/
+app/config/
+```
+
+---
+
+## Alumno 2: Base de datos, inventario y producción
+
+El Alumno 2 se encargó de complementar la parte de base de datos y los módulos relacionados con la administración de producción.
+
+Aportaciones:
+
+- Configuración de conexión automática a MySQL en los puertos `3306` y `3307`.
+- Actualización de la creación automática de la base de datos.
+- Documentación de la estructura de base de datos en `database/schema.sql`.
+- Creación y organización de tablas relacionadas con inventario, productos, producción, recetas y consultas IA.
+- Agregado de datos iniciales para materias primas, productos y registros de producción.
+- Implementación de formularios para administrar materia prima, productos y producción diaria.
+- Implementación de movimientos de inventario para registrar entradas, salidas y ajustes.
+- Implementación de recetas de productos para relacionar productos con las materias primas necesarias.
+- Integración del descuento automático de inventario al registrar producción.
+- Corrección de la conexión del módulo de IA para usar la conexión central del sistema.
+
+Archivos relacionados:
+
+```text
 app/config/database.php
-```
-
-Por defecto usa:
-
-```txt
-Host: 127.0.0.1
-Puerto: 3306
-Base de datos: pasteleria_manager
-Usuario: root
-Contraseña: vacía
-```
-
-Para cada computadora, lo correcto es crear una copia del archivo:
-
-```txt
-app/config/database.local.example.php
-```
-
-y renombrarla como:
-
-```txt
-app/config/database.local.php
-```
-
-Ese archivo no se debe subir a GitHub porque puede contener contraseñas o IPs privadas.
-
----
-
-## Cómo usar una base de datos “siempre online” desde tu PC 24/7
-
-Este proyecto ya soporta una base MySQL remota. Para que tus colaboradores usen la misma base de datos:
-
-1. Tu PC debe estar encendida y conectada a internet.
-2. MySQL debe estar activo en XAMPP.
-3. Debes permitir conexiones remotas a MySQL.
-4. Tus compañeros deben poner la IP o dirección de tu PC en `database.local.php`.
-
-La opción más segura para estudiantes es usar **Tailscale** o una VPN similar, porque así no expones MySQL directamente a internet.
-
-Ejemplo para colaboradores:
-
-```php
-return [
-    'host' => '100.XX.XX.XX', // IP de Tailscale de la PC que tendrá MySQL 24/7
-    'port' => 3306,
-    'database' => 'pasteleria_manager',
-    'username' => 'equipo_pasteleria',
-    'password' => 'CAMBIA_ESTA_CONTRASENA',
-];
-```
-
-También se incluye una guía más detallada en:
-
-```txt
-docs/CONFIGURAR_BASE_ONLINE.md
+app/core/Database.php
+database/schema.sql
+public/modules/inventory.php
+public/modules/products.php
+public/modules/production.php
+public/modules/inventory_movements.php
+public/modules/product_recipes.php
+public/modules/ai.php
 ```
 
 ---
 
-## Rutas principales
+## Alumno 3: Inteligencia Artificial
 
-```txt
-/public/index.php                 Inicio
-/public/login.php                 Login
-/public/register.php              Registro público como User
-/public/logout.php                Cerrar sesión
-/public/dashboard.php             Redirección por rol
-/public/admin/dashboard.php       Panel Admin
-/public/admin/users.php           Administración de usuarios, roles y permisos
-/public/admin/user_create.php     Crear usuario desde Admin
-/public/admin/user_edit.php       Editar usuario y permisos
-/public/admin/appearance.php      Cambiar colores globales
-/public/user/dashboard.php        Panel User
-/public/modules/inventory.php     Inventario de materia prima
-/public/modules/products.php      Productos
-/public/modules/production.php    Registro de producción
-/public/modules/reports.php       Dashboards y reportes
-/public/modules/ai.php            Consultas IA
-/public/403.php                   Acceso denegado
+El Alumno 3 se encargó de la integración de consultas con Inteligencia Artificial.
+
+Aportaciones:
+
+- Creación del módulo de consultas IA.
+- Implementación de interfaz tipo chat.
+- Creación de preguntas sugeridas.
+- Integración de respuestas relacionadas con producción e inventario.
+- Preparación del módulo para responder preguntas de usuarios.
+- Uso de información del sistema como contexto para la IA.
+- Registro de consultas en la tabla `ai_queries`.
+
+Archivos relacionados:
+
+```text
+public/modules/ai.php
+app/services/
+api/
+```
+
+Nota: la función de IA depende de la API externa configurada. Si la API no responde o la cuota se supera, el sistema puede mostrar un error relacionado con la consulta.
+
+---
+
+## Alumno 4: Frontend, dashboards y diseño visual
+
+El Alumno 4 trabajó en la parte visual y experiencia de usuario del sistema.
+
+Aportaciones:
+
+- Diseño visual del sistema.
+- Mejora de la interfaz principal.
+- Organización del menú de navegación.
+- Estilos generales de la aplicación.
+- Diseño visual de módulos.
+- Mejoras en formularios.
+- Implementación o mejora de dashboards.
+- Agregó una gráfica para visualizar información del sistema de forma más clara.
+- Diseño de reportes visuales.
+- Adaptación de interfaz para la temática de pastelería industrial.
+
+Archivos relacionados:
+
+```text
+public/assets/
+public/modules/reports.php
+public/partials/
+public/admin/dashboard.php
+public/modules/
 ```
 
 ---
 
-## Base de datos incluida
+## Flujo de uso del sistema
 
-Tablas principales de la parte del Alumno 1:
-
-- `roles`
-- `users`
-- `login_logs`
-- `modules`
-- `user_module_permissions`
-- `app_settings`
-
-Tablas base para que los demás compañeros puedan continuar el proyecto:
-
-- `materias_primas`
-- `productos`
-- `produccion_diaria`
+1. El usuario entra al sistema.
+2. Inicia sesión como Admin o User.
+3. El sistema muestra los módulos disponibles según sus permisos.
+4. El Admin puede administrar usuarios, permisos, inventario, productos y producción.
+5. Se pueden registrar materias primas y productos.
+6. Se pueden crear recetas relacionando productos con materia prima.
+7. Se registra producción diaria.
+8. El sistema descuenta inventario según la receta del producto.
+9. Se guardan movimientos de inventario.
+10. Se pueden consultar dashboards y reportes.
+11. Se pueden hacer consultas a la IA.
+12. Las consultas de IA se guardan en la base de datos.
 
 ---
 
-## Checklist de la repartición
+## Control de versiones
 
-| Requisito del Alumno 1 | Estado |
-|---|---|
-| Crear estructura inicial del proyecto | Hecho |
-| Configurar conexión general del sistema | Hecho |
-| Crear sistema de login | Hecho |
-| Crear registro de usuarios | Hecho |
-| Implementar roles Admin/User | Hecho |
-| Proteger páginas según rol | Hecho |
-| Crear cierre de sesión | Hecho |
-| Redirigir al usuario según cuenta | Hecho |
-| Validar que usuarios no se repitan | Hecho |
-| Guardar contraseñas con hash | Hecho |
-| Crear usuarios desde Admin | Hecho |
-| Asignar permisos por módulo | Hecho |
-| Cambiar colores desde Admin | Hecho |
-| Guardar cambios de apariencia permanentemente | Hecho |
-| Ajustar contraste automáticamente | Hecho |
+El proyecto se trabaja con Git y GitHub.
+
+Cada alumno debe trabajar en su propia rama y subir sus avances mediante commits y pull requests.
+
+Ramas sugeridas:
+
+```text
+alumno1-backend
+alumno2-base-datos
+alumno3-ia
+alumno4-frontend
+```
 
 ---
 
-## Nota para GitHub
+## Notas importantes
 
-Este proyecto incluye `.gitignore` para evitar subir configuraciones privadas.
+- La base de datos se crea automáticamente desde `app/core/Database.php`.
+- El archivo `database/schema.sql` sirve como respaldo y documentación.
+- Los datos iniciales se insertan automáticamente al abrir el sistema.
+- La conexión prueba automáticamente los puertos `3306` y `3307`.
+- Las consultas IA se almacenan en `ai_queries`.
+- Los movimientos de inventario se almacenan en `movimientos_inventario`.
+- Las recetas de productos se almacenan en `producto_materias_primas`.
 
-Sí se puede subir:
+---
 
-- Código PHP.
-- CSS/JS.
-- README.
-- Estructura de carpetas.
-- `database.local.example.php`.
+## Estado actual del proyecto
 
-No se debe subir:
+El sistema cuenta actualmente con:
 
-- `database.local.php`.
-- Contraseñas reales.
-- Datos privados de la empresa o equipo.
-
-## Actualización: base central en la PC del dueño y Estado de PCs
-
-Esta versión agrega un módulo llamado **Estado de PCs**. Sirve para que el Admin vea qué equipos/navegadores han abierto el sistema y si pudieron escribir su estado en la base de datos central.
-
-El módulo es asignable desde **Usuarios y permisos**. Por defecto solo el Admin lo tiene activo, pero se puede marcar la casilla de `Ver` para otro usuario si se desea.
-
-### Importante sobre la base online
-
-Si el proyecto se sube a Git y todos deben conectarse a la base de datos de la PC principal, el archivo que manda es:
-
-```txt
-app/config/database.php
-```
-
-Ahí se debe poner la IP pública, dominio DDNS o IP de VPN de la PC donde estará MySQL encendido 24/7. No uses `127.0.0.1` para colaboradores, porque eso apunta a la PC de cada colaborador.
-
-Guía completa:
-
-```txt
-docs/BASE_DE_DATOS_CENTRAL_PC_24_7.md
-```
-
-### Qué corrige esta versión
-
-- Agrega tabla `workstation_status`.
-- Registra equipos que abren el sistema.
-- Agrega botón de sincronización manual para el equipo actual.
-- Evita prometer sincronización falsa de Git: una web no puede forzar `git pull` en otras PCs.
-- Ajusta la lógica de semillas para no reiniciar inventario/productos cada vez que se abre el sistema.
+- Login funcional.
+- Roles Admin y User.
+- Permisos por módulo.
+- Base de datos automática.
+- Inventario de materia prima.
+- Catálogo de productos.
+- Registro de producción.
+- Movimientos de inventario.
+- Recetas de productos.
+- Dashboards y reportes.
+- Consultas IA.
+- Registro de historial de IA.
+- Interfaz visual adaptada a pastelería industrial.
